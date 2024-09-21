@@ -6,13 +6,32 @@
 // number of goals the team scored, and the total number of goals the team
 // conceded.
 
-use std::collections::HashMap;
+use std::{collections::HashMap, hash::Hash};
 
 // A structure to store the goal details of a team.
 #[derive(Default)]
 struct TeamScores {
     goals_scored: u8,
     goals_conceded: u8,
+}
+
+
+fn update_team_score<'a>(
+    scores: &mut HashMap<&'a str, TeamScores>,
+    team_name: &'a str,
+    goals_scored: u8,
+    goals_conceded: u8,
+) {
+    scores
+        .entry(team_name)
+        .and_modify(|team_scores: &mut TeamScores| {
+            team_scores.goals_scored += goals_scored;
+            team_scores.goals_conceded += goals_conceded;
+        })
+        .or_insert(TeamScores {
+            goals_scored,
+            goals_conceded,
+        });
 }
 
 fn build_scores_table(results: &str) -> HashMap<&str, TeamScores> {
@@ -31,10 +50,15 @@ fn build_scores_table(results: &str) -> HashMap<&str, TeamScores> {
         // Keep in mind that goals scored by team 1 will be the number of goals
         // conceded by team 2. Similarly, goals scored by team 2 will be the
         // number of goals conceded by team 1.
+
+        // add team to table if not exist;
+        update_team_score(&mut scores, team_1_name, team_1_score, team_2_score);
+        update_team_score(&mut scores, team_2_name, team_2_score, team_1_score);
     }
 
     scores
 }
+
 
 fn main() {
     // You can optionally experiment here.
